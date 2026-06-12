@@ -86,6 +86,30 @@ services:
         max-size: "1m"
         max-file: "1"
 
+  # ── Searcharvester → Tavily fallback proxy ─────────────────────────
+  # Tries the self-hosted service first; silently falls back to Tavily
+  # on any failure.  Exposes the same Tavily-compatible API on :8001.
+  proxy:
+    build: ./proxy
+    container_name: searcharvester-proxy
+    restart: unless-stopped
+    networks:
+      - searxng
+    ports:
+      - "8001:8001"
+    environment:
+      - SEARCHARVESTER_URL=http://tavily-adapter:8000
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - API_KEY=${API_KEY:-}
+      - SEARCHARVESTER_TIMEOUT=15
+    depends_on:
+      - tavily-adapter
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
   # React + Tailwind + Vite UI over the /research API.
   frontend:
     build:
