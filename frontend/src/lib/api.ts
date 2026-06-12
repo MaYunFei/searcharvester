@@ -4,6 +4,15 @@ export const API_URL =
   (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ||
   "http://localhost:8000";
 
+export const API_KEY =
+  (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_KEY || "";
+
+function apiHeaders(extra?: Record<string, string>): Record<string, string> {
+  const h: Record<string, string> = { ...extra };
+  if (API_KEY) h["X-API-Key"] = API_KEY;
+  return h;
+}
+
 // --------- Types mirroring the FastAPI models ---------
 
 export type JobStatus =
@@ -65,7 +74,7 @@ export interface JobTerminalStatus {
 export async function createResearch(query: string): Promise<ResearchCreated> {
   const r = await fetch(`${API_URL}/research`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: apiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ query }),
   });
   if (!r.ok) {
