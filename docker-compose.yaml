@@ -56,6 +56,9 @@ services:
       # synced on boot; our 3 custom skills ship alongside in skills/.
       - ./hermes-data:/opt/data:rw
     environment:
+      - CORS_ORIGINS=*
+      - HOME=/opt/data
+      - API_KEY=${API_KEY:-}
       - JOBS_DIR=/srv/searxng-docker/jobs
       - HERMES_HOME=/opt/data
       - ADAPTER_URL_FOR_HERMES=http://localhost:8000
@@ -89,6 +92,7 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_API_KEY: ${VITE_API_KEY:-}
     container_name: searcharvester-frontend
     restart: unless-stopped
     ports:
