@@ -203,15 +203,11 @@ async def extract(request: Request):
     searcharvester_ok = 0
 
     for url in urls:
-        resp = await try_searcharvester("/extract", {"url": url})
+        resp = await try_searcharvester("/extract", {"url": url, "size": body.get("size", "m")})
         if resp is not None:
             data = resp.json()
             if not is_empty_result(data):
-                results.append({
-                    "url": url,
-                    "title": data.get("title"),
-                    "raw_content": data.get("content") or data.get("raw_content", ""),
-                })
+                results.append(data)  # 透传 adapter 原始响应
                 searcharvester_ok += 1
                 continue
         failed_urls.append(url)
