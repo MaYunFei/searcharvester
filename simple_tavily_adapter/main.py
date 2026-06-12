@@ -25,8 +25,9 @@ from typing import Any, Literal
 
 import aiohttp
 import trafilatura
-from fastapi import FastAPI, HTTPException, Path
+from fastapi import FastAPI, HTTPException, Path, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, constr
 from sse_starlette.sse import EventSourceResponse
 
@@ -54,6 +55,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------- API Key Auth ----------
+API_KEY: str = os.environ.get("API_KEY", "")
+
+@app.middleware("http")
+async def api_key_middleware(request: Request, call_next):
+    if request.url.path == "/health" or not API_KEY:
+        return await call_next(request)
+    auth = request.headers.get("X-API-Key", "") or \
+           request.headers.get("Authorization", "").removeprefix("Bearer ")
+    if auth != API_KEY:
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+    return await call_next(request)
 
 
 # ---------- Orchestrator singleton ----------
